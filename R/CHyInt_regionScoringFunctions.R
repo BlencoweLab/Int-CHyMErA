@@ -2,11 +2,14 @@
 ### in Int-CHyMErA screen.
 
 
-getGeneFitness <- function(x, de) {
+getGeneFitness <- function(x, de, info) {
     ### Get mean gene LFC from exon-targeting Cas9 guides (TKOv3 and additional guides)
     ### x:             Length 2 vector specifying contrast
     ### de:            Data frame produced during edgeR analysis, with sample RPM, LFC and FDR
     i <- which(names(de) == paste0(paste(rev(x), collapse=":"), ".log2FC"))
+    if (length(i) != 1) {
+        stop("Contrast ", paste(rev(x), collapse=":"), " not found in de")
+    }
     geneDrop <- aggregate(de[info$Data.Subset %in% c("TKOv3","Cas9 Exonic Ctrl"), i], 
                           by=list(gene = info$Target.gene[info$Data.Subset %in% c("TKOv3","Cas9 Exonic Ctrl")]), 
                           FUN=mean, na.rm=T)

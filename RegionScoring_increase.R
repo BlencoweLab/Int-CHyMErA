@@ -3,10 +3,10 @@
 ### To run after scoring hits with decreased growth (because we tune the hit threshold based on that)
 ### - For each time point/treatment vs. T0, find exon-deletion guide pairs with a dropout < 5th percentile of intergenic-intergenic guides. 
 ### - Consider only guides where none of the intronic-intergenic controls drop out.
-### - Identify ‘fitness’ and ‘non-fitness’ genes as the bottom 20% and top 60% of genes, respectively, of the mean of exonic Cas9 targeting guides.
-### - Based on exon-deletion pairs, find the threshold of the fraction of overlapping guide pairs that best separates 
-###   positive controls (exons in fitness genes) from negative controls (exons in non-fitness genes). Require >= 2 changing guide pairs among >= 2 available.
-### - Then Apply same theshold and criteria to intronic regions to identify regions with dropout phenotype.
+### - Identify ‘fitness’ and ‘non-fitness’ genes as the top 10% and bottom 80% of genes, respectively, of the mean of exonic Cas9 targeting guides.
+###   This is different from calling hits for dropout, as fewer genes (and deletions) increase growth when deleted.
+### - Read in the threshold of the fraction of overlapping guide pairs that best separates
+###   that was derived from exon-deletion portion of dropout calling, and apply to call hits for increased growth.
 
 library(parallel)
 source("./R/CHyInt_regionScoringFunctions.R")
@@ -22,16 +22,19 @@ performance.HAP1.T18 <- "./output/dropout/tables_HAP1.exonDel/HAP1.exonDel_T18_N
 performance.RPE1.T21 <- "./output/dropout/tables_RPE1.exonDel/RPE1.exonDel_T21_NT:T0_Performance.csv"
 performance.RPE1.T27 <- "./output/dropout/tables_RPE1.exonDel/RPE1.exonDel_T27_NT:T0_Performance.csv"
 
-cores <- 4  # CPUs
+cores <- 4                # CPUs
 minInfPairs <- 2          # Minimum number of informative guide pairs to score a region, where informative means not NA and
                           # either gRNA within the hgRNA has not significant LFC when paired with an intergenic partner
 minChangePairs <- 2       # Minimum number of changing guide pairs to score a region as a hit, where changing means 
                           # that the LFC is < the 5th percentile of the intergenic-intergenic guides for dropout or 
                           # higher than the 95th percentile for enrichment.
-ii.quant  <- 0.95         # Threshold, in LFC of this quantil of the LFC of intergenic-intergenic guides, to call an hgRNA
+ii.quant  <- 0.95         # Threshold, in LFC of this quantile of the LFC of intergenic-intergenic guides, to call an hgRNA
                           # significantly changing. In the case of scoring increase, this is the lower bound.
 fit.quant <- c(0.9, 0.8)  # Bounds (in quantile of the LFC distribution of genes knockouts) on fitness and non-fitness genes.
                           # In the case of scoring increase, the first is the lower bound and the second is the upper bound.
+goodPairsOnly <- TRUE     # If TRUE, only hgRNAs where neither of the component gRNAs results in a significant
+                          # fitness changes when paired with a distal intergenic control, presumably resulting in a single cut
+                          # that is repaired leaving small InDels.
 
 
 ### Function defs
@@ -59,7 +62,8 @@ if (!dir.exists(file.path(outDir, "tables_RPE1.intronDel"))) {dir.create(file.pa
 
 deH <- read.delim(file.path(outDir, "../edgeR/edgeR_HAP1.tab.gz"), check.names = F)
 deR <- read.delim(file.path(outDir, "../edgeR/edgeR_RPE1.tab.gz"), check.names = F)
-info <- read.delim(file.path(outDir, "../edgeR/GuideInfo.tab.gz"))
+info <- read.delim(file.path(inDir, "IntCHyMErA_library.design.tab.gz"))
+info <- info[match(deH$Guide.ID, info$Guide.ID),]
 
 contrH <- list(
     c("T0","T12_NT"),
@@ -73,8 +77,8 @@ contrR <- list(
 
 ### Generate gene LFC based on exon-targeting Cas9 guides (TKOv3 and additional guides)
 
-gFitnessH <- lapply(contrH, getGeneFitness, de = deH)
-gFitnessR <- lapply(contrR, getGeneFitness, de = deR)
+gFitnessH <- lapply(contrH, getGeneFitness, de = deH, info)
+gFitnessR <- lapply(contrR, getGeneFitness, de = deR, info)
 
 
 ### Get percentage of hgRNAs with dropout per deleted exon region from the hits with decreased fitness
@@ -98,7 +102,7 @@ intronIncrH <- mcmapply(
     MoreArgs = list(
         de = deH, info = info, region = "introns",
         direction="increase", ii.quant = ii.quant, fit.quant = fit.quant,
-        goodPairsOnly = TRUE, minInfPairs = minInfPairs, minChangePairs = minChangePairs
+        goodPairsOnly = goodPairsOnly, minInfPairs = minInfPairs, minChangePairs = minChangePairs
     ), 
     mc.cores = cores
 )
@@ -108,7 +112,7 @@ intronIncrR <- mcmapply(
     MoreArgs = list(
         de = deR, info = info, region = "introns",
         direction="increase", ii.quant = ii.quant, fit.quant = fit.quant,
-        goodPairsOnly = TRUE, minInfPairs = minInfPairs, minChangePairs = minChangePairs
+        goodPairsOnly = goodPairsOnly, minInfPairs = minInfPairs, minChangePairs = minChangePairs
     ), 
     mc.cores = cores
 )

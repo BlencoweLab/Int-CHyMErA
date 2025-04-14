@@ -16,12 +16,20 @@ source("./R/CHyInt_regionScoringFunctions.R")
 inDir  <- "./input"
 outDir <- "./output/dropout"
 
-cores <- 4  # CPUs
-minInfPairs <- 2     # Minimum number of informative guide pairs to score a region, where informative means not NA and
-                     # either gRNA within the hgRNA has not significant LFC when paired with an intergenic partner
-minChangePairs <- 2  # Minimum number of changing guide pairs to score a region as a hit, where changing means 
-                     # that the LFC is < the 5th percentile of the intergenic-intergenic guides for dropout or 
-                     # higher than the 95th percentile for enrichment.
+cores <- 4                # CPUs
+minInfPairs <- 2          # Minimum number of informative guide pairs to score a region, where informative means not NA and
+                          # either gRNA within the hgRNA has not significant LFC when paired with an intergenic partner
+minChangePairs <- 2       # Minimum number of changing guide pairs to score a region as a hit, where changing means 
+                          # that the LFC is < the 5th percentile of the intergenic-intergenic guides for dropout or 
+                          # higher than the 95th percentile for enrichment.
+ii.quant  <- 0.05         # Threshold, in LFC of this quantile of the LFC of intergenic-intergenic guides, to call an hgRNA
+                          # significantly changing. In the case of scoring decrease, this is the upper bound.
+fit.quant <- c(0.2, 0.4)  # Bounds (in quantile of the LFC distribution of genes knockouts) on fitness and non-fitness genes.
+                          # In the case of scoring decrease, the first is the upper bound and the second is the upper lower bound.
+goodPairsOnly <- TRUE     # If TRUE, only hgRNAs where neither of the component gRNAs results in a significant
+                          # fitness changes when paired with a distal intergenic control, presumably resulting in a single cut
+                          # that is repaired leaving small InDels.
+
 
 if (!dir.exists(outDir))  {dir.create(outDir, recursive = TRUE)}
 if (!dir.exists(file.path(outDir, "tables_HAP1.exonDel")))   {dir.create(file.path(outDir, "tables_HAP1.exonDel"), recursive = TRUE)}
@@ -34,7 +42,8 @@ if (!dir.exists(file.path(outDir, "tables_RPE1.intronDel"))) {dir.create(file.pa
 
 deH <- read.delim(file.path(outDir, "../edgeR/edgeR_HAP1.tab.gz"), check.names = F)
 deR <- read.delim(file.path(outDir, "../edgeR/edgeR_RPE1.tab.gz"), check.names = F)
-info <- read.delim(file.path(outDir, "../edgeR/GuideInfo.tab.gz"))
+info <- read.delim(file.path(inDir, "IntCHyMErA_library.design.tab.gz"))
+info <- info[match(deH$Guide.ID, info$Guide.ID),]
 
 contrH <- list(
     c("T0","T12_NT"),
@@ -48,8 +57,8 @@ contrR <- list(
 
 ### Generate gene LFC based on exon-targeting Cas9 guides (TKOv3 and additional guides)
 
-gFitnessH <- lapply(contrH, getGeneFitness, de = deH)
-gFitnessR <- lapply(contrR, getGeneFitness, de = deR)
+gFitnessH <- lapply(contrH, getGeneFitness, de = deH, info)
+gFitnessR <- lapply(contrR, getGeneFitness, de = deR, info)
 
 for (i in 1:length(contrH)) {
     write.csv(
@@ -71,7 +80,8 @@ exonDropH <- mcmapply(
     FUN = getRegionDropFrac, contrH, gFitness=gFitnessH, SIMPLIFY = FALSE,
     MoreArgs = list(
         de = deH, info = info, 
-        goodPairsOnly = TRUE, minInfPairs = minInfPairs, minChangePairs = minChangePairs
+        direction="decrease", ii.quant = ii.quant, fit.quant = fit.quant,
+        goodPairsOnly = goodPairsOnly, minInfPairs = minInfPairs, minChangePairs = minChangePairs
     ),
     mc.cores = cores
 )
@@ -79,7 +89,8 @@ exonDropR <- mcmapply(
     FUN = getRegionDropFrac, contrR, gFitness=gFitnessR, SIMPLIFY = FALSE,
     MoreArgs = list(
         de = deR, info = info, 
-        goodPairsOnly = TRUE, minInfPairs = minInfPairs, minChangePairs = minChangePairs
+        direction="decrease", ii.quant = ii.quant, fit.quant = fit.quant,
+        goodPairsOnly = goodPairsOnly, minInfPairs = minInfPairs, minChangePairs = minChangePairs
     ), 
     mc.cores = cores
 )
@@ -142,7 +153,8 @@ intronDropH <- mcmapply(
     FUN = getRegionDropFrac, contrH, gFitness = gFitnessH, SIMPLIFY = FALSE, 
     MoreArgs = list(
         de = deH, info = info, region = "introns", direction = "drop",
-        goodPairsOnly = TRUE, minInfPairs = minInfPairs, minChangePairs = minChangePairs
+        direction="decrease", ii.quant = ii.quant, fit.quant = fit.quant,
+        goodPairsOnly = goodPairsOnly, minInfPairs = minInfPairs, minChangePairs = minChangePairs
     ), 
     mc.cores = cores
 )
@@ -151,7 +163,8 @@ intronDropR <- mcmapply(
     FUN = getRegionDropFrac, contrR, gFitness = gFitnessR, SIMPLIFY = FALSE, 
     MoreArgs = list(
         de = deR, info = info, region = "introns", direction = "drop",
-        goodPairsOnly = TRUE, minInfPairs = minInfPairs, minChangePairs = minChangePairs
+        direction="decrease", ii.quant = ii.quant, fit.quant = fit.quant,
+        goodPairsOnly = goodPairsOnly, minInfPairs = minInfPairs, minChangePairs = minChangePairs
     ), 
     mc.cores = cores
 )

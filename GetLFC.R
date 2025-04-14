@@ -42,20 +42,20 @@ de.table <- function(de, contrasts) {
 if (!dir.exists(outDir))  {dir.create(outDir, recursive = TRUE)}
 
 
-raw   <- read.delim(file.path(inDir, "chyint2_screen2_merged_counts_11Oct22.txt"),
+raw   <- read.delim(file.path(inDir, "IntCHyMErA_merged_counts.tab.gz"),
                      stringsAsFactors = T)
 
-norm   <- read.delim(file.path(inDir, "chyint2_screen2_merged_norm.counts_11Oct22.txt"),
+norm   <- read.delim(file.path(inDir, "IntCHyMErA_merged_norm.counts.tab.gz"),
                      stringsAsFactors = T)
 
+info   <- read.delim(file.path(inDir, "IntCHyMErA_library.design.tab.gz"),
+                     stringsAsFactors = T)
 
-### Remove data we did not use
-raw  <- raw[,c(1:16, 23:25, 32:37, 44:46, 53:55)]
-norm <- norm[,c(1:16, 23:25, 32:37, 44:46, 53:55)]
+info <- info[match(raw$Guide.ID, info$Guide.ID),]              
+stopifnot(all(norm$Guide.ID == info$Guide.ID))       
 
-info <- norm[,1:15]
-raw  <- as.matrix(raw[,16:ncol(raw)])
-norm <- as.matrix(norm[,16:ncol(norm)])
+raw  <- as.matrix(raw[,2:ncol(raw)])
+norm <- as.matrix(norm[,2:ncol(norm)])
 rownames(raw) <- rownames(norm) <- info$Guide.ID
 
 
@@ -64,8 +64,8 @@ rownames(raw) <- rownames(norm) <- info$Guide.ID
 samples <- data.frame(Sample = colnames(raw))
 samples$Type <- sub("_[ABC]$", "", samples$Sample)
 samples$Treatment <- sub("(HAP1|RPE1)_", "", samples$Type)
-sampH <- samples[c(8,9,1:7),]
-sampR <- samples[c(8,9,10:16),]
+sampH <- samples[c(1,2, 3:9),]
+sampR <- samples[c(1,2, 10:16),]
 groupsH <- relevel(as.factor(sampH$Treatment), ref = "T0")
 groupsR <- relevel(as.factor(sampR$Treatment), ref = "T0")
 
@@ -75,13 +75,13 @@ normH <- norm[,sampH$Sample]
 normR <- norm[,sampR$Sample]
 
 # Determine what RPM corresponds to a minium count of minCounts in the smalles sample
-minRPM.H <- 1000000 * minCounts / min(colSums(raw)[c("HAP1_T0","Library_pool_Lig2")])
+minRPM.H <- 1000000 * minCounts / min(colSums(raw)[c("HAP1_T0","Library_pool_Lig2")]) # Ligation 2 is smaller library
 minRPM.R <- 1000000 * minCounts / min(colSums(raw)[c("RPE1_T0","Library_pool_Lig2")])
 cat("Minimum RPM in HAP1:", minRPM.H, "\n")
 cat("Minimum RPM in RPE1:", minRPM.R, "\n")
 
 # Filter out hgRNAs with low RPM in ligation or T0 samples
-keepH <- normH[,"Library_pool_Lig2"] >= minRPM.H & normH[,"HAP1_T0"] >= minRPM.H  # Ligation 2 is smaller library
+keepH <- normH[,"Library_pool_Lig2"] >= minRPM.H & normH[,"HAP1_T0"] >= minRPM.H  
 keepR <- normR[,"Library_pool_Lig2"] >= minRPM.R & normR[,"RPE1_T0"] >= minRPM.R
 cat("Discarding", length(which(!keepH)), "of", nrow(rawH), "guide pairs in HAP1\n")
 cat("Discarding", length(which(!keepR)), "of", nrow(rawR), "guide pairs in RPE1\n")
@@ -129,31 +129,16 @@ deH <- lapply(deH, mergeToAll, allgenes=raw)
 deR <- lapply(deR, mergeToAll, allgenes=raw)
 
 # edgeR CPM
-#rpmH <- cpmByGroup(yH.all)
-#rpmR <- cpmByGroup(yR.all)
+rpmH <- cpmByGroup(yH.all)
+rpmR <- cpmByGroup(yR.all)
 
-#colnames(rpmH) <- paste0(colnames(rpmH), ".RPM")
-#colnames(rpmR) <- paste0(colnames(rpmR), ".RPM")
+colnames(rpmH) <- paste0(colnames(rpmH), ".RPM")
+colnames(rpmR) <- paste0(colnames(rpmR), ".RPM")
     
-#rpmH.sing <- cpm(yH.all)
-#rpmR.sing <- cpm(yR.all)
-#colnames(rpmH.sing) <- paste0(colnames(rpmH.sing), ".RPM")
-#colnames(rpmR.sing) <- paste0(colnames(rpmR.sing), ".RPM")
-
 deH.all <- de.table(deH, contrH)
 deR.all <- de.table(deR, contrR)
 deH.all<- data.frame(Guide.ID = deH.all$Guide.ID, round(rpmH, 2), deH.all[,-1], check.names=F)
 deR.all<- data.frame(Guide.ID = deR.all$Guide.ID, round(rpmR, 2), deR.all[,-1], check.names=F)
-
-#gz <- gzfile(file.path(outDir, "RPM.samples.HAP1_UB221019.tab.gz"), "w")
-#write.table(data.frame(Guide.ID = rownames(rpmH.sing), round(rpmH.sing, 2)),
-#            row.names=F, col.names=T, quote=F, sep="\t", file = gz)
-#close(gz)
-
-#gz <- gzfile(file.path(outDir, "RPM.samples.RPE1_UB221019.tab.gz"), "w")
-#write.table(data.frame(Guide.ID = rownames(rpmR.sing), round(rpmR.sing, 2)),
-#            row.names=F, col.names=T, quote=F, sep="\t", file = gz)
-#close(gz)
 
 gz <- gzfile(file.path(outDir, "edgeR_HAP1.tab.gz"), "w")
 write.table(deH.all, row.names=F, col.names=T, quote=F, sep="\t", file = gz)
@@ -161,8 +146,4 @@ close(gz)
 
 gz <- gzfile(file.path(outDir, "edgeR_RPE1.tab.gz"), "w")
 write.table(deR.all, row.names=F, col.names=T, quote=F, sep="\t", file = gz)
-close(gz)
-
-gz <- gzfile(file.path(outDir, "GuideInfo.tab.gz"), "w")
-write.table(info, row.names=F, col.names=T, quote=F, sep="\t", file = gz)
 close(gz)
