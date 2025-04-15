@@ -388,7 +388,7 @@ saveGuidePairs <- function(x, de, gFitness, ii.quant = 0.05, fit.quant = c(0.2, 
     i <- which(names(de) == paste0(paste(rev(x), collapse=":"), ".log2FC"))
     thres <- quantile(de[info$Data.Subset == "II_Ctrl", i], p=ii.quant, na.rm=T)
     
-    ### Deletion guide pair table
+    ### Deletion hgRNA table
     ## Check which double-deletion guides have controls that change
     if (region == "exons") {
         regionDelPairs <- info$Data.Subset %in% c("Exon Deletion","ExonDeletion")
@@ -411,7 +411,7 @@ saveGuidePairs <- function(x, de, gFitness, ii.quant = 0.05, fit.quant = c(0.2, 
         !(info$Cas9.Guide %in% badCas9) &
         !(info$Cpf1.Guide %in% badCas12)
     
-    ## Make list of double-deletion guide pairs
+    ## Make list of double-deletion hgRNAs
     if (direction == "drop") {
         minLFC.cas9  <- suppressWarnings(aggregate(de[regionCtlPairs & info$Cas9.Guide.Type == "Intronic",i], min, na.rm=T, 
                                                    by=list(Cas9.Guide=info$Cas9.Guide[regionCtlPairs & 
@@ -451,7 +451,7 @@ saveGuidePairs <- function(x, de, gFitness, ii.quant = 0.05, fit.quant = c(0.2, 
               file=file.path(outDir, paste0(outName, "_deletionGuidePairs.csv")))
     
     
-    ### Cas9 exonic guide table
+    ### Cas9 exonic hgRNA table
     sel <- info$Data.Subset %in% c("TKOv3", "Cas9 Exonic Ctrl")
     hit.thres <- quantile(gFitness$meanLFC, p=fit.quant, na.rm=T)
     if (direction == "drop") {
@@ -475,7 +475,7 @@ saveGuidePairs <- function(x, de, gFitness, ii.quant = 0.05, fit.quant = c(0.2, 
               file=file.path(outDir, paste0(outName, "_exonicCas9.csv")))
     
     
-    ### Cas9 exonic guide table
+    ### Intergenic-intergenic control hgRNA table
     sel <- info$Data.Subset == "II_Ctrl"
     iiCtrls <- data.frame(info[sel,],
                           log2FC = de[sel, i]
