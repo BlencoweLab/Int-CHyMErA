@@ -16,7 +16,7 @@ Time point T18 for HAP1 and T21 for RPE-1 were used for further analysis.
 - **Intergenic-intergenic controls:** Negative controls that should not result in deletion with a fitness effect. The distribution of log2-fold changes (log2FC) of these controls is used to call significant effects: Deletions with a log2FC lower than the 5th percentile are assumed to mediate a significant dropout, and above the 95th percentile are assumed to mediate a significant fitness increase.
 - **Deletion specificity controls:** Each Cas9 and Cas12a part of an hgRNA desiged to crease a deletion is also present in combination with a partner targeting a distal intergenic regions. This control is expected to cause no or a weaker effect. Deletion hgRNAs where one of these controls does cause an effect are disregarded.
 - **Exon-targeting controls**: hgRNAs where either the Cas9 or Cas12a gRNA targets a coding exon as in a classic CRISPR deletion screen. The large majority of exon-targeting Cas9 gRNAs are derived from the [Toronto CRISPR human knockout library](https://www.addgene.org/pooled-library/moffat-crispr-knockout-tkov3/) (TKOv3). The Cas9 gRNAs are used to measure fitness effect of gene depletion. 
-- **Exon-deletion controls:** hgRNAs designed to delete a coding exon with the Cas9 and Cas12a gRNA targeted to intronic regions on either side of the exon. These controls are used to assess the efficacy of the screen, and to infer the optimal fraction of overlapping deletion hgRNAs associated with a fitness phenotyope to call a region a hit by maximizing the differential between exonic deletions in fitness- vs. non-fitness genes.
+- **Exon-deletion controls:** hgRNAs designed to delete a coding exon with the Cas9 and Cas12a gRNA targeted to intronic regions on either side of the exon. These controls are used to assess the efficacy of the screen, and to infer the optimal fraction of overlapping deletion hgRNAs associated with a fitness phenotyope to call a region a hit by maximizing the differential between exonic deletions in fitness- vs. non-fitness genes. A portion of these controls were taken over from Fig. 6 of [this paper](https://pubmed.ncbi.nlm.nih.gov/32249828/).
 
 
 ### Steps
@@ -62,6 +62,7 @@ hgRNA-level information. *Guide.ID*, unique hgRNA ID; *Event*, unique ID for del
 
 **[cell].intronDel_[time point]_Dropout_Counts.csv**  
 **[cell].intronDel_[time point]_Increase_Counts.csv**  
+**[cell].exonDel_[time point]_Dropout_Counts.csv**  
 Event-level information for intronic deletions. *Event.Type*, type of target deletion (cons.intron, deletion of most of an intron; cons.region, deletion of conserved intronic region; AS, deletion of regions containing PTC exon; non-cons, deletion of non-conserved intron; Cas12a.exonic, positive Cas12a control); *Span*, width of target region; *hit*, target deletion was scored as a hit; *effectiveDeletion*, largest deletion in common across overlapping hgRNAs with fitness effect; *geneFitness*, fitness effect of host gene depletion from Cas9 exonic targeting; *geneLFC.exonicCas9*, mean log2FC of Cas9 gRNAs targeting coding exons; *totPairs.doubleX*, total number of deletion hgRNAs; *okPairs.doubleX*, number of deletion hgRNAs of which neither intronic-intergenic control showed a phenoytpe; *totPairsDrop.doubleX*, number of deletion hgRNAs with dropout; *okPairsDrop.doubleX*, number of deletion hgRNAs with dropout and of which neither intronic-intergenic control showed a fitness effect; *totPairs.singleX*, total number of intronic-intergenic hgRNAs; *okPairs.singleX*, number of intronic-intergenic hgRNAs that have no fitness effect; *totPairsDrop.singleX*, total number of intronic-intergenic hgRNAs with dropout; *okPairsDrop.singleX*, by definition 0 using current parameters; *fractionTotPairs.doubleX*, fraction of totPairs.doubleX with dropout; *fractionOKPairs.doubleX*, fraction of okPairs.doubleX with dropout; *fractionTotPairs.singleX*, fraction of totPairs.singleX with dropout; *fractionOKPairs.singleX*, fraction of okPairs.singleX with dropout (0 by definition using current parameters). Analogous for increase.
 
 **[cell].intronDel_[time point]_exonicCas9.csv**  
@@ -83,7 +84,7 @@ Data underlying screen performance plots.
 
 
 ### Reference
-Shaghayegh Farhangmehr*, Ulrich Braunschweig*, Mingkun Wu, Syed Nabeel-Shah1, Kevin Brown, Jason Moffat, and Benjamin J. Blencowe. A genome-wide functional analysis of conserved intronic regions reveals essential roles for speckle-associated detained introns. *Manuscript submitted* (2025)
+Shaghayegh Farhangmehr*, Ulrich Braunschweig*, Mingkun Wu, Syed Nabeel-Shah, Kevin Brown, Jason Moffat, and Benjamin J. Blencowe. A genome-wide functional analysis of conserved intronic regions reveals essential roles for speckle-associated detained introns. *Manuscript submitted* (2025)
 
 ### Contact
 For questions or comments, please raise an issue or email u -dot- braunschweig -at- utoronto -dot- ca.
