@@ -8,7 +8,7 @@ Farhangmehr, Braunschweig et al. (2025)
 
 This repository hosts the library design file and raw/normalized hgRNA counts, as well as the methods to calculate abundance changes from hgRNA counts and identify regions that confer decreased or increased cell fitness when deleted, i.e., screen hits. Please see the manuscript for details. Applying the steps below to the input read counts yields the files in the output. Raw sequencing data can be found on GEO ###########.
 
-Time point T18 for HAP1 and T21 for RPE-1 were found optimal and used for further analysis.
+Time point T18 for HAP1 and T21 for RPE-1 were used for further analysis.
 
 
 ### Types of hgRNAs
@@ -37,18 +37,21 @@ Rscript RegionScoring_increase.R
 
 
 ### Output files
-**Folder _edgeR_**
+**Folder _edgeR_**  
 **edgeR_dispersionEstimation.pdf**  
-Plots of common, trended and tag-wise dispersion from edgeR.  
+Plots of common, trended and tag-wise dispersion from edgeR.
+
 **edgeR_[cell].tab.gz**  
 edgeR output including RPM, log2FC and FDR for every hgRNA.  
 
-**Folder _dropout_**  
+**Folders _dropout_ and _increase_**  
 Results from scoring deletions causing decreased fitness  
 **[cell].geneDropout.Cas9exonic_[time point].csv**  
-Average log2FC per gene of coding exon-targeting Cas9 guides. Used to segment genes into fitness and non-fitness genes.  
+Average log2FC per gene of coding exon-targeting Cas9 guides. Used to segment genes into fitness and non-fitness genes.
+
 **ScreenPerformance_[cell].exonDel.pdf**  
-Left, percentage of deletions of exons within fitness genes or non-fitness genes that cause dropout (y-axis), out of those scored as hits at a given threshold of the fraction of overlapping hgRNAs with a phenotype (x-axis). Dashed line indicates threshold with best separation, which is then applied to scoring intronic deletions. Right, same but for intronic-intergenic hgRNAs. Note that due to the settings in this analysis, none of these controls were allowed to have a fitness effect. Additional criteria are stated in the figure.  
+Left, percentage of deletions of exons within fitness genes or non-fitness genes that cause dropout (y-axis), out of those scored as hits at a given threshold of the fraction of overlapping hgRNAs with a phenotype (x-axis). Dashed line indicates threshold with best separation, which is then applied to scoring intronic deletions. Right, same but for intronic-intergenic hgRNAs. Note that due to the settings in this analysis, none of these controls were allowed to have a fitness effect. Additional criteria are stated in the figure.
+
 **ScreenPerformance_[cell].intronDel.pdf**  
 Same as above, but for intronic deletions. Dashed line indicates threshold derived from exon deletions and applied to intronic deletions.
 
