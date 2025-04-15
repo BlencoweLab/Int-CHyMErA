@@ -1,5 +1,5 @@
 # A genome-wide functional analysis of conserved intronic regions reveals essential roles for speckle-associated detained introns
-Farhangmehr, Braunschweig et al., 2025
+Farhangmehr, Braunschweig et al. (2025)
 
 ## Int-CHyMErA screen of intronic deletions
 
@@ -38,43 +38,43 @@ Rscript RegionScoring_increase.R
 
 ### Output files
 **Folder _edgeR_**
-**edgeR_dispersionEstimation.pdf**
-Plots of common, trended and tag-wise dispersion from edgeR.
-**edgeR_[cell].tab.gz**
-edgeR output including RPM, log2FC and FDR for every hgRNA.
+**edgeR_dispersionEstimation.pdf**  
+Plots of common, trended and tag-wise dispersion from edgeR.  
+**edgeR_[cell].tab.gz**  
+edgeR output including RPM, log2FC and FDR for every hgRNA.  
 
-**Folder _dropout_**
-Results from scoring deletions causing decreased fitness
-**[cell].geneDropout.Cas9exonic_[time point].csv**
-Average log2FC per gene of coding exon-targeting Cas9 guides. Used to segment genes into fitness and non-fitness genes.
-**ScreenPerformance_[cell].exonDel.pdf**
-Left, percentage of deletions of exons within fitness genes or non-fitness genes that cause dropout (y-axis), out of those scored as hits at a given threshold of the fraction of overlapping hgRNAs with a phenotype (x-axis). Dashed line indicates threshold with best separation, which is then applied to scoring intronic deletions. Right, same but for intronic-intergenic hgRNAs. Note that due to the settings in this analysis, none of these controls were allowed to have a fitness effect. Additional criteria are stated in the figure.
-**ScreenPerformance_[cell].intronDel.pdf**
+**Folder _dropout_**  
+Results from scoring deletions causing decreased fitness  
+**[cell].geneDropout.Cas9exonic_[time point].csv**  
+Average log2FC per gene of coding exon-targeting Cas9 guides. Used to segment genes into fitness and non-fitness genes.  
+**ScreenPerformance_[cell].exonDel.pdf**  
+Left, percentage of deletions of exons within fitness genes or non-fitness genes that cause dropout (y-axis), out of those scored as hits at a given threshold of the fraction of overlapping hgRNAs with a phenotype (x-axis). Dashed line indicates threshold with best separation, which is then applied to scoring intronic deletions. Right, same but for intronic-intergenic hgRNAs. Note that due to the settings in this analysis, none of these controls were allowed to have a fitness effect. Additional criteria are stated in the figure.  
+**ScreenPerformance_[cell].intronDel.pdf**  
 Same as above, but for intronic deletions. Dashed line indicates threshold derived from exon deletions and applied to intronic deletions.
 
-Within subfolders:
-**[cell].exonDel_[time point]_deletionGuidePairs.csv**
-**[cell].intronDel_[time point]_deletionGuidePairs.csv**
+Within subfolders:  
+**[cell].exonDel_[time point]_deletionGuidePairs.csv**  
+**[cell].intronDel_[time point]_deletionGuidePairs.csv**  
 hgRNA-level information. *Guide.ID*, unique hgRNA ID; *Event*, unique ID for deletion target; *Data.Subset*, type of hgRNA; *Event.Type, type of target; *Cas9.Guide.Type*, type of target of Cas9 part of hgRNA; *Doench.Score*, Cas9 score based on Doench et al., 2016; *Cpf1.Guide.Type*, type of target of Cas12a part of hgRNA; *Cpf1.CNN.Score*, [CHyMErA-Net](https://github.com/BlencoweLab/CHyMErA-Net) Cas12a guide score; *drop*/*increase*: hgRNA had significant dropout/increase; *log2FC* log1-fold change of hgRNA vs T0; *okPair*, TRUE if neither of the two component gRNAs had a fitness effect when combined with intergenic control; *worstCas9Ctrl*, lowest (for dropout) log2FC of Cas9 gRNA when combined with intergenic control Cas12a gRNA; *worstCas12aCtrl*  lowest (for dropout) log2FC of Cas12a gRNA when combined with intergenic control Cas9 gRNA.
 
-**[cell].intronDel_[time point]_Dropout_Counts.csv**
-**[cell].intronDel_[time point]_Increase_Counts.csv**
+**[cell].intronDel_[time point]_Dropout_Counts.csv**  
+**[cell].intronDel_[time point]_Increase_Counts.csv**  
 Event-level information for intronic deletions. *Event.Type*, type of target deletion (cons.intron, deletion of most of an intron; cons.region, deletion of conserved intronic region; AS, deletion of regions containing PTC exon; non-cons, deletion of non-conserved intron; Cas12a.exonic, positive Cas12a control); *Span*, width of target region; *hit*, target deletion was scored as a hit; *effectiveDeletion*, largest deletion in common across overlapping hgRNAs with fitness effect; *geneFitness*, fitness effect of host gene depletion from Cas9 exonic targeting; *geneLFC.exonicCas9*, mean log2FC of Cas9 gRNAs targeting coding exons; *totPairs.doubleX*, total number of deletion hgRNAs; *okPairs.doubleX*, number of deletion hgRNAs of which neither intronic-intergenic control showed a phenoytpe; *totPairsDrop.doubleX*, number of deletion hgRNAs with dropout; *okPairsDrop.doubleX*, number of deletion hgRNAs with dropout and of which neither intronic-intergenic control showed a fitness effect; *totPairs.singleX*, total number of intronic-intergenic hgRNAs; *okPairs.singleX*, number of intronic-intergenic hgRNAs that have no fitness effect; *totPairsDrop.singleX*, total number of intronic-intergenic hgRNAs with dropout; *okPairsDrop.singleX*, by definition 0 using current parameters; *fractionTotPairs.doubleX*, fraction of totPairs.doubleX with dropout; *fractionOKPairs.doubleX*, fraction of okPairs.doubleX with dropout; *fractionTotPairs.singleX*, fraction of totPairs.singleX with dropout; *fractionOKPairs.singleX*, fraction of okPairs.singleX with dropout (0 by definition using current parameters). Analogous for increase.
 
-**[cell].intronDel_[time point]_exonicCas9.csv**
-**[cell].exonDel_[time point]_exonicCas9.csv**
+**[cell].intronDel_[time point]_exonicCas9.csv**  
+**[cell].exonDel_[time point]_exonicCas9.csv**  
 hgRNA-level information for coding exon-targeting Cas9 gRNAs. See above for column definitions. *geneFitness*, aggregate gene label based on mean of all coding exon-targeting Cas9 gRNAs per gene.
 
-**[cell].intronDel_[time point]_IIcontrols.csv**
-**[cell].intronDel_[time point]_IIcontrols.csv**
+**[cell].intronDel_[time point]_IIcontrols.csv**  
+**[cell].intronDel_[time point]_IIcontrols.csv**  
 hgRNA-level information for intronic-intronic negative control hgRNAs.
 
-**[cell].intronDel_[time point]_Parameters.csv**
-**[cell].exonDel_[time point]_Parameters.csv**
+**[cell].intronDel_[time point]_Parameters.csv**  
+**[cell].exonDel_[time point]_Parameters.csv**  
 User options of the analysis run and empirical thresholds. *direction*, drop or increase; *region*, exons or introns, *contrast*, time points compared; *ii.quant*, quantile of intergenic-intergenic controls below (dropout) or above (increase) which log2FC are considered a significant fitness effect; *ii.thres*, log2FC corresponding to ii.quant; *minChangePairs*, minimum hgRNAs with significant effect required for hit call; *fit.thres*, log2FC threshold corresponding to fit.quant; *fit.quant*, quantiles of gene fitness scores beyond which to consider genes fitness or noon-fitness genes; *goodPairsOnly*, whether to require that hgRNAs considered for hit calling must exclude those where intronic-intergenic controls result in a fitness effect; *minInfPairs*, minmum number of hgRNAs passing filtering for a targeted deletion to be evaluated.
 
-**[cell].intronDel_[time point]_Performance.csv**
-**[cell].exonDel_[time point]_Performance.csv**
+**[cell].intronDel_[time point]_Performance.csv**  
+**[cell].exonDel_[time point]_Performance.csv**  
 Data underlying screen performance plots.
 
 
